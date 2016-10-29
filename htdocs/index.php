@@ -6,7 +6,7 @@ use \actimeo\pgproc\PgProcedures;
 use \actimeo\pgproc\PgProcException;
 use \actimeo\pgproc\PgProcFunctionNotAvailableException;
 
-$base = new PgProcedures($pg_host, $pg_user, $pg_pass, $pg_database);
+$base = new PgProcedures($pg_host, $pg_user, $pg_pass, $pg_database, $pg_port);
 
 $cmd = $_GET['o'];
 
