@@ -39,7 +39,6 @@ function call_proc($schema, $function, $body) {
   $debug = true;
   
   $ret = $base->pgprocedures->search_arguments ($schema, $function);
-  print_r($ret);
   $all = false;
   if (count ($ret)) {
     foreach ($ret as $r) {
