@@ -39,13 +39,17 @@ function call_proc($schema, $function, $body) {
   $debug = true;
   
   $ret = $base->pgprocedures->search_arguments ($schema, $function);
-
+  print_r($ret);
   $all = false;
   if (count ($ret)) {
     foreach ($ret as $r) {
       $all = true;
       foreach ($r['argnames'] as $argname) {
 	if (!property_exists ($body, $argname)) {
+	  if ($argname == 'prm_connection_ip') {
+	    $body->prm_connection_ip = $_SERVER['REMOTE_ADDR'];
+	    continue;
+	  }
 	  if ($debug) {
 	    echo "$argname not found\n" ;
 	    print_r ($body);
