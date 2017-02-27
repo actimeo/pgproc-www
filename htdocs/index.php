@@ -9,8 +9,22 @@ use \actimeo\pgproc\PgProcFunctionNotAvailableException;
 $base = new PgProcedures($pg_host, $pg_user, $pg_pass, $pg_database, $pg_port);
 
 $cmd = $_GET['o'];
-
 $body = json_decode(file_get_contents('php://input'));
+
+if (isset ($mc_cache) && $mc_cache) {
+  $mc_key = get_memcached_key($cmd, $body);
+  //  echo $key; 
+  $mc = new Memcached();
+  $mc->addServer('localhost', 11211);
+  $res = $mc->get($mc_key);
+  if ($res !== FALSE) {
+    header ('Content-Type: application/json ; charset=utf-8');
+    header ('Cache-Control: no-cache , private');
+    header ('Pragma: no-cache');
+    echo $res;
+    exit;
+  }
+}
 
 if ($cmd === 'batch') {
   call_batch($body);
@@ -25,11 +39,15 @@ if ($cmd === 'batch') {
   $results = call_proc($schema, $function, $body);
   header ('Content-Type: application/json ; charset=utf-8');
   header ('Cache-Control: no-cache , private');
-  header ('Pragma: no-cache');
+  header ('Pragma: no-cache');  
   if ($results !== null) 
     echo json_encode ($results);
   else 
   echo '[]';
+
+  if (isset ($mc_cache) && $mc_cache) {
+    $mc->set($mc_key, $results !== null ? json_encode($results) : '[]');
+  }
 }
 
 exit;
@@ -122,4 +140,12 @@ function call_batch($calls) {
     call_proc($schema, $function, $args);
   }
   echo '[]';
+}
+
+function get_memcached_key($cmd, $body) {
+  $res = $cmd;
+  foreach ($body as $val) {
+    $res .= '/'.$val;
+  }
+  return $res;
 }
